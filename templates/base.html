@@ -535,6 +535,9 @@
         border-color: var(--accent);
         background: var(--surface);
       }
+      html[data-theme="dark"] .theme-toggle img {
+        filter: invert(1);
+      }
 
       /* PRINT */
       @media print {
@@ -620,7 +623,13 @@
             id="themeToggle"
             title="Toggle dark/light mode"
           >
-            <span id="themeIcon">🌙</span>
+            <img
+              id="themeIcon"
+              src="{{ url_for('static', filename='icons/moon-svgrepo-com.svg') }}"
+              alt="Theme toggle"
+              width="20"
+              height="20"
+            />
           </button>
           {% block topbar_actions %}{% endblock %}
         </div>
@@ -661,7 +670,11 @@
         if (theme === "light" || theme === "dark") {
           html.setAttribute("data-theme", theme);
           localStorage.setItem("theme", theme);
-          themeIcon.textContent = theme === "dark" ? "🌙" : "☀️";
+          const iconSrc =
+            theme === "dark"
+              ? "{{ url_for('static', filename='icons/moon-svgrepo-com.svg') }}"
+              : "{{ url_for('static', filename='icons/sun-2-svgrepo-com.svg') }}";
+          themeIcon.src = iconSrc;
         }
       }
 
