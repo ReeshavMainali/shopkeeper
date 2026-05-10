@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %} · Sale #{{ sale.id }}{% endblock %}
+{% block page_title %}Sale #{{ "%04d"|format(sale.id) }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('print_bill', sid=sale.id) }}" class="btn btn-secondary">🖨 Print Bill</a>
+  <a href="{{ url_for('sales') }}" class="btn btn-secondary">← Back</a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:600px">
+  <div class="card">
+    <div class="card-header">
+      <h3>Sale Details</h3>
+      <span class="badge {{ 'green' if sale.status=='paid' else ('yellow' if sale.status=='partial' else 'red') }}">
+        {{ sale.status.upper() }}
+      </span>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+        <div><div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase">Customer</div><div style="margin-top:2px">{{ sale.customer_name }}</div></div>
+        <div><div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase">Date</div><div style="margin-top:2px">{{ sale.created_at[:16] }}</div></div>
+      </div>
+      <table>
+        <thead><tr><th>Item</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr></thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td>{{ item.product_name }}</td>
+            <td>{{ item.qty }}</td>
+            <td>Rs {{ "%.2f"|format(item.price) }}</td>
+            <td>Rs {{ "%.2f"|format(item.qty * item.price) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.85rem">
+          <span style="color:var(--muted)">Total</span><span>Rs {{ "%.2f"|format(sale.total) }}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.85rem">
+          <span style="color:var(--muted)">Paid</span><span style="color:var(--green)">Rs {{ "%.2f"|format(sale.paid) }}</span>
+        </div>
+        {% if sale.total > sale.paid %}
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem">
+          <span style="color:var(--accent2)">Balance Due</span><span style="color:var(--accent2)">Rs {{ "%.2f"|format(sale.total - sale.paid) }}</span>
+        </div>
+        {% endif %}
+      </div>
+      {% if sale.notes %}
+      <div style="margin-top:12px;font-size:0.82rem;color:var(--muted)">Note: {{ sale.notes }}</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

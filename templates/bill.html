@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bill #{{ sale.id }}</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap");
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "DM Mono", monospace;
+        background: #fff;
+        color: #111;
+        font-size: 13px;
+      }
+
+      .bill {
+        max-width: 380px;
+        margin: 0 auto;
+        padding: 24px 20px;
+      }
+      .shop-name {
+        font-family: "Syne", sans-serif;
+        font-size: 1.6rem;
+        font-weight: 800;
+        text-align: center;
+        letter-spacing: -1px;
+      }
+      .shop-sub {
+        text-align: center;
+        font-size: 0.75rem;
+        color: #666;
+        margin-bottom: 4px;
+      }
+      .divider {
+        border: none;
+        border-top: 1px dashed #999;
+        margin: 12px 0;
+      }
+      .divider-solid {
+        border: none;
+        border-top: 2px solid #111;
+        margin: 12px 0;
+      }
+      .meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: #555;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+      }
+      th {
+        text-align: left;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #666;
+        padding: 4px 0;
+        border-bottom: 1px solid #ddd;
+      }
+      td {
+        padding: 6px 0;
+        font-size: 0.82rem;
+        vertical-align: top;
+      }
+      td:last-child {
+        text-align: right;
+      }
+      th:last-child {
+        text-align: right;
+      }
+      .totals {
+        margin-top: 8px;
+      }
+      .totals .row {
+        display: flex;
+        justify-content: space-between;
+        padding: 3px 0;
+        font-size: 0.82rem;
+      }
+      .totals .grand {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        font-family: "Syne", sans-serif;
+        font-weight: 800;
+        font-size: 1.1rem;
+        border-top: 2px solid #111;
+        margin-top: 6px;
+      }
+      .status-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 500;
+      }
+      .paid {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .unpaid {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .partial {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .footer {
+        text-align: center;
+        font-size: 0.72rem;
+        color: #888;
+        margin-top: 20px;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 20px;
+      }
+      .btn {
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-family: "DM Mono", monospace;
+        font-size: 0.82rem;
+        cursor: pointer;
+        border: 1px solid;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .btn-print {
+        background: #111;
+        color: #fff;
+        border-color: #111;
+      }
+      .btn-back {
+        background: #fff;
+        color: #111;
+        border-color: #ccc;
+      }
+
+      @media print {
+        .actions {
+          display: none;
+        }
+        body {
+          padding: 0;
+        }
+        .bill {
+          padding: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bill">
+      <div class="shop-name">ShopKeeper</div>
+      <div class="shop-sub">Your Trusted Shop</div>
+      <hr class="divider" />
+
+      <div class="meta">
+        <span>Bill #{{ "%04d"|format(sale.id) }}</span>
+        <span>{{ sale.created_at[:16] }}</span>
+      </div>
+      <div class="meta" style="margin-top: 4px">
+        <span>Customer: <strong>{{ sale.customer_name }}</strong></span>
+        <span class="status-badge {{ sale.status }}"
+          >{{ sale.status.upper() }}</span
+        >
+      </div>
+
+      <hr class="divider" />
+
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th style="text-align: center">Qty</th>
+            <th>Price</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td>{{ item.product_name }}</td>
+            <td style="text-align: center">{{ item.qty }}</td>
+            <td>{{ "%.0f"|format(item.price) }}</td>
+            <td>{{ "%.0f"|format(item.qty * item.price) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <hr class="divider" />
+
+      <div class="totals">
+        <div class="row">
+          <span>Subtotal</span><span>Rs {{ "%.2f"|format(sale.total) }}</span>
+        </div>
+        <div class="row">
+          <span>Paid</span><span>Rs {{ "%.2f"|format(sale.paid) }}</span>
+        </div>
+        {% if sale.total > sale.paid %}
+        <div class="row" style="color: #c0392b">
+          <span>Balance Due</span
+          ><span>Rs {{ "%.2f"|format(sale.total - sale.paid) }}</span>
+        </div>
+        {% elif sale.paid > sale.total %}
+        <div class="row" style="color: #27ae60">
+          <span>Change</span
+          ><span>Rs {{ "%.2f"|format(sale.paid - sale.total) }}</span>
+        </div>
+        {% endif %}
+        <div class="grand">
+          <span>TOTAL</span><span>Rs {{ "%.2f"|format(sale.total) }}</span>
+        </div>
+      </div>
+
+      {% if sale.notes %}
+      <hr class="divider" />
+      <div style="font-size: 0.78rem; color: #555">Note: {{ sale.notes }}</div>
+      {% endif %}
+
+      <div class="footer">
+        Thank you for your purchase!<br />
+        Come again ♥
+      </div>
+
+      <div class="actions no-print">
+        <button onclick="window.print()" class="btn btn-print">
+          🖨 Print Bill
+        </button>
+        <a href="{{ url_for('new_sale') }}" class="btn btn-back">✚ New Sale</a>
+        <a href="{{ url_for('sales') }}" class="btn btn-back">← Sales</a>
+      </div>
+    </div>
+  </body>
+</html>

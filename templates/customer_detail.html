@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %} · {{ customer.name }}{% endblock %}
+{% block page_title %}{{ customer.name }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('edit_customer', cid=customer.id) }}" class="btn btn-secondary">Edit</a>
+  <a href="{{ url_for('customers') }}" class="btn btn-secondary">← Back</a>
+{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:280px 1fr;gap:20px;align-items:start">
+  <!-- Customer Info -->
+  <div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header"><h3>Customer Info</h3></div>
+      <div class="card-body">
+        <div style="margin-bottom:10px">
+          <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase">Phone</div>
+          <div style="margin-top:2px">{{ customer.phone or '—' }}</div>
+        </div>
+        <div style="margin-bottom:10px">
+          <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase">Address</div>
+          <div style="margin-top:2px;font-size:0.85rem">{{ customer.address or '—' }}</div>
+        </div>
+        {% if customer.notes %}
+        <div>
+          <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase">Notes</div>
+          <div style="margin-top:2px;font-size:0.82rem">{{ customer.notes }}</div>
+        </div>
+        {% endif %}
+        <div style="margin-top:14px;font-size:0.72rem;color:var(--muted)">Customer since {{ customer.created_at[:10] }}</div>
+      </div>
+    </div>
+
+    {% if tabs %}
+    <div class="card" style="border-color:rgba(232,93,74,0.3)">
+      <div class="card-header">
+        <h3 style="color:var(--accent2)">Open Tab</h3>
+        <span class="badge red">Rs {{ "%.0f"|format(tab_total) }}</span>
+      </div>
+      <div class="card-body">
+        {% for tab in tabs %}
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:0.82rem">
+          <div>
+            <div>{{ tab.product_name }}</div>
+            <div style="color:var(--muted);font-size:0.72rem">{{ tab.opened_at[:16] }}</div>
+          </div>
+          <div style="text-align:right">
+            <div>{{ tab.qty }} × Rs {{ "%.0f"|format(tab.price) }}</div>
+            <form method="post" action="{{ url_for('close_tab', tid=tab.id) }}" style="margin-top:4px">
+              <button type="submit" class="btn btn-green btn-sm">Mark Paid</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+        <form method="post" action="{{ url_for('close_customer_tabs', cid=customer.id) }}" style="margin-top:12px">
+          <button type="submit" class="btn btn-green" style="width:100%;justify-content:center">✓ Clear All Tabs</button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Purchase History -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Purchase History</h3>
+      <span style="font-size:0.78rem;color:var(--muted)">{{ sales|length }} sale(s)</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Total</th><th>Paid</th><th>Status</th><th>Date</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for sale in sales %}
+          <tr>
+            <td style="color:var(--muted)">#{{ "%04d"|format(sale.id) }}</td>
+            <td><strong>Rs {{ "%.0f"|format(sale.total) }}</strong></td>
+            <td style="color:var(--green)">Rs {{ "%.0f"|format(sale.paid) }}</td>
+            <td><span class="badge {{ 'green' if sale.status=='paid' else ('yellow' if sale.status=='partial' else 'red') }}">{{ sale.status }}</span></td>
+            <td style="color:var(--muted);font-size:0.78rem">{{ sale.created_at[:16] }}</td>
+            <td>
+              <a href="{{ url_for('print_bill', sid=sale.id) }}" class="btn btn-secondary btn-sm">🖨</a>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No purchases yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

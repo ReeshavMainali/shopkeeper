@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %} · New Sale{% endblock %}
+{% block page_title %}New Sale{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('sales') }}" class="btn btn-secondary">← History</a>
+{% endblock %}
+
+{% block content %}
+<div class="pos-layout">
+  <!-- LEFT: Product picker -->
+  <div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header"><h3>Add Items</h3></div>
+      <div class="card-body">
+        <div style="display:flex;gap:10px;margin-bottom:12px">
+          <input id="product-search" placeholder="Search product…" style="flex:1" oninput="filterProducts()">
+        </div>
+        <div id="product-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;max-height:420px;overflow-y:auto;">
+          {% for p in products %}
+          <div class="prod-card" data-name="{{ p.name|lower }}"
+               onclick="addToCart({{ p.id }},'{{ p.name }}',{{ p.price }},{{ p.stock }},'{{ p.unit }}')"
+               style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;cursor:pointer;transition:border 0.15s"
+               onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="font-size:0.83rem;font-weight:500;margin-bottom:4px">{{ p.name }}</div>
+            <div style="color:var(--accent);font-family:var(--font-head);font-weight:700">Rs {{ "%.0f"|format(p.price) }}</div>
+            <div style="font-size:0.7rem;color:var(--muted);margin-top:2px">{{ p.stock }} {{ p.unit }} left</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer & Notes -->
+    <div class="card">
+      <div class="card-header"><h3>Customer & Payment</h3></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Customer (optional)</label>
+            <select id="customer-select" onchange="updateCustomerName()">
+              <option value="">Walk-in Customer</option>
+              {% for c in customers %}
+              <option value="{{ c.id }}" data-name="{{ c.name }}">{{ c.name }} {% if c.phone %}({{ c.phone }}){% endif %}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Amount Paid (Rs)</label>
+            <input type="number" id="paid-input" step="0.01" placeholder="0" oninput="updateChange()">
+          </div>
+          <div class="form-group full">
+            <label>Notes</label>
+            <input type="text" id="notes-input" placeholder="Optional note…">
+          </div>
+        </div>
+        <div id="change-display" style="margin-top:12px;display:none;padding:10px 14px;background:rgba(62,207,142,0.08);border:1px solid rgba(62,207,142,0.2);border-radius:var(--radius);font-size:0.85rem">
+          Change: <strong id="change-amount" style="color:var(--green)">Rs 0</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Cart -->
+  <div class="pos-cart">
+    <div class="card">
+      <div class="card-header">
+        <h3>Cart</h3>
+        <span id="cart-count" class="badge gray">0 items</span>
+      </div>
+      <div class="card-body">
+        <div id="cart-items" style="min-height:80px">
+          <p style="color:var(--muted);font-size:0.82rem;text-align:center;padding:20px 0">Cart is empty</p>
+        </div>
+        <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">
+          <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:6px">
+            <span style="color:var(--muted)">Subtotal</span>
+            <span id="subtotal">Rs 0</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-family:var(--font-head);font-weight:800;font-size:1.2rem;margin-bottom:16px">
+            <span>Total</span>
+            <span id="total" style="color:var(--accent)">Rs 0</span>
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px" onclick="completeSale()">
+            ✓ Complete Sale
+          </button>
+          <button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center;margin-top:8px" onclick="clearCart()">
+            Clear Cart
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let cart = {};
+
+function filterProducts() {
+  const q = document.getElementById('product-search').value.toLowerCase();
+  document.querySelectorAll('.prod-card').forEach(el => {
+    el.style.display = el.dataset.name.includes(q) ? '' : 'none';
+  });
+}
+
+function addToCart(id, name, price, stock, unit) {
+  if (cart[id]) {
+    if (cart[id].qty >= stock) { alert('Not enough stock!'); return; }
+    cart[id].qty++;
+  } else {
+    cart[id] = { name, price, qty: 1, stock, unit };
+  }
+  renderCart();
+}
+
+function changeQty(id, delta) {
+  if (!cart[id]) return;
+  cart[id].qty += delta;
+  if (cart[id].qty <= 0) delete cart[id];
+  renderCart();
+}
+
+function renderCart() {
+  const div = document.getElementById('cart-items');
+  const ids = Object.keys(cart);
+  document.getElementById('cart-count').textContent = ids.length + ' items';
+  if (!ids.length) { div.innerHTML = '<p style="color:var(--muted);font-size:0.82rem;text-align:center;padding:20px 0">Cart is empty</p>'; updateTotals(); return; }
+  div.innerHTML = ids.map(id => {
+    const item = cart[id];
+    return `<div class="cart-item">
+      <div style="flex:1">
+        <div style="font-size:0.82rem">${item.name}</div>
+        <div style="font-size:0.72rem;color:var(--muted)">Rs ${item.price} × ${item.qty} = Rs ${(item.price*item.qty).toFixed(0)}</div>
+      </div>
+      <div class="qty-ctrl">
+        <button onclick="changeQty(${id},-1)">−</button>
+        <span style="font-size:0.85rem;min-width:20px;text-align:center">${item.qty}</span>
+        <button onclick="changeQty(${id},1)">+</button>
+      </div>
+    </div>`;
+  }).join('');
+  updateTotals();
+}
+
+function updateTotals() {
+  const total = Object.values(cart).reduce((s,i) => s + i.price*i.qty, 0);
+  document.getElementById('subtotal').textContent = 'Rs ' + total.toFixed(0);
+  document.getElementById('total').textContent = 'Rs ' + total.toFixed(0);
+  updateChange();
+}
+
+function updateChange() {
+  const total = Object.values(cart).reduce((s,i) => s + i.price*i.qty, 0);
+  const paid = parseFloat(document.getElementById('paid-input').value) || 0;
+  const changeDiv = document.getElementById('change-display');
+  if (paid > 0 && total > 0) {
+    changeDiv.style.display = '';
+    document.getElementById('change-amount').textContent = 'Rs ' + Math.max(0, paid - total).toFixed(0);
+  } else { changeDiv.style.display = 'none'; }
+}
+
+function updateCustomerName() {}
+
+function clearCart() { cart = {}; renderCart(); }
+
+async function completeSale() {
+  const ids = Object.keys(cart);
+  if (!ids.length) { alert('Cart is empty!'); return; }
+  const sel = document.getElementById('customer-select');
+  const customer_id = sel.value || null;
+  const customer_name = sel.value
+    ? sel.options[sel.selectedIndex].dataset.name
+    : 'Walk-in';
+  const paid = parseFloat(document.getElementById('paid-input').value) || 0;
+  const notes = document.getElementById('notes-input').value;
+  const items = ids.map(id => ({
+    product_id: parseInt(id),
+    product_name: cart[id].name,
+    qty: cart[id].qty,
+    price: cart[id].price
+  }));
+
+  const res = await fetch('/sales/new', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ customer_id, customer_name, items, paid, notes })
+  });
+  const data = await res.json();
+  if (data.success) {
+    window.location.href = '/sales/' + data.sale_id + '/bill';
+  }
+}
+</script>
+{% endblock %}

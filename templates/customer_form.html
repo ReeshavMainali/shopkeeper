@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %} · {{ 'Edit' if customer else 'Add' }} Customer{% endblock %}
+{% block page_title %}{{ 'Edit' if customer else 'Add' }} Customer{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('customers') }}" class="btn btn-secondary">← Back</a>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:500px">
+  <div class="card-header"><h3>Customer Details</h3></div>
+  <div class="card-body">
+    <form method="post">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Name *</label>
+          <input name="name" required value="{{ customer.name if customer else '' }}" placeholder="e.g. Ram Bahadur">
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input name="phone" value="{{ customer.phone if customer else '' }}" placeholder="98XXXXXXXX">
+        </div>
+        <div class="form-group">
+          <label>Address</label>
+          <input name="address" value="{{ customer.address if customer else '' }}" placeholder="e.g. Banepa-3">
+        </div>
+        <div class="form-group full">
+          <label>Notes</label>
+          <textarea name="notes" placeholder="Any notes about this customer…">{{ customer.notes if customer else '' }}</textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{ 'Update' if customer else 'Add' }} Customer</button>
+        <a href="{{ url_for('customers') }}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %} · Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('new_sale') }}" class="btn btn-primary">✚ New Sale</a>
+{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+  <div class="stat-card gold">
+    <div class="label">Today's Sales</div>
+    <div class="value">Rs {{ "%.0f"|format(stats.today_sales) }}</div>
+    <div class="sub">Revenue today</div>
+  </div>
+  <div class="stat-card gold">
+    <div class="label">This Month</div>
+    <div class="value">Rs {{ "%.0f"|format(stats.month_sales) }}</div>
+    <div class="sub">Month to date</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Products</div>
+    <div class="value">{{ stats.products }}</div>
+    <div class="sub">In catalogue</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Customers</div>
+    <div class="value">{{ stats.customers }}</div>
+    <div class="sub">Registered</div>
+  </div>
+  {% if stats.low_stock > 0 %}
+  <div class="stat-card warn">
+    <div class="label">Low Stock</div>
+    <div class="value">{{ stats.low_stock }}</div>
+    <div class="sub">Items need restock</div>
+  </div>
+  {% endif %}
+  {% if stats.open_tabs > 0 %}
+  <div class="stat-card warn">
+    <div class="label">Open Tabs</div>
+    <div class="value">{{ stats.open_tabs }}</div>
+    <div class="sub">Unpaid items</div>
+  </div>
+  {% endif %}
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <div class="card-header">
+      <h3>⚠ Low Stock Alert</h3>
+      <a href="{{ url_for('products') }}" class="btn btn-secondary btn-sm">View All</a>
+    </div>
+    <div class="card-body">
+      {% if low_stock_items %}
+        {% for item in low_stock_items %}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+          <div>
+            <div style="font-size:0.85rem;">{{ item.name }}</div>
+            <div style="font-size:0.72rem;color:var(--muted);">{{ item.category or 'No category' }}</div>
+          </div>
+          <div style="text-align:right;">
+            <span class="badge red">{{ item.stock }} {{ item.unit }}</span>
+            <div class="low-stock-bar"><span style="width:{{ [item.stock * 100 // item.low_stock_threshold, 100]|min }}%"></span></div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="color:var(--muted);font-size:0.83rem;">All items well stocked ✓</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>◈ Recent Sales</h3>
+      <a href="{{ url_for('sales') }}" class="btn btn-secondary btn-sm">View All</a>
+    </div>
+    <div class="card-body">
+      {% if recent_sales %}
+        {% for sale in recent_sales %}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+          <div>
+            <div style="font-size:0.85rem;">{{ sale.customer_name }}</div>
+            <div style="font-size:0.72rem;color:var(--muted);">{{ sale.created_at[:16] }}</div>
+          </div>
+          <div style="text-align:right;display:flex;gap:8px;align-items:center;">
+            <span style="font-family:var(--font-head);font-weight:700;">Rs {{ "%.0f"|format(sale.total) }}</span>
+            <span class="badge {{ 'green' if sale.status=='paid' else ('yellow' if sale.status=='partial' else 'red') }}">{{ sale.status }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="color:var(--muted);font-size:0.83rem;">No sales yet. <a href="{{ url_for('new_sale') }}" style="color:var(--accent);">Record a sale →</a></p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
