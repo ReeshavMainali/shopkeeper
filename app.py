@@ -5,7 +5,7 @@ import io
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = "shopkeeper-secret-2024"
+app.secret_key = "you_can_change_this_to_a_random_string"
 
 DB = "shop.db"
 
