@@ -24,6 +24,47 @@
         --font-head: "Syne", sans-serif;
         --font-mono: "DM Mono", monospace;
       }
+
+      /* Light Mode */
+      @media (prefers-color-scheme: light) {
+        html:not([data-theme="dark"]) {
+          --bg: #e5e9f0;
+          --surface: #ffffff;
+          --surface2: #f0f2f5;
+          --border: #a6b5c5;
+          --accent: #6a8eb8;
+          --accent2: #d6767d;
+          --green: #6a8eb8;
+          --text: #2c333e;
+          --muted: #4a5d70;
+        }
+      }
+
+      /* Dark Mode Override */
+      html[data-theme="dark"] {
+        --bg: #242932;
+        --surface: #1b1e25;
+        --surface2: #242932;
+        --border: #3e4654;
+        --accent: #8cb0d1;
+        --accent2: #c96b72;
+        --green: #7da0c3;
+        --text: #dce2e9;
+        --muted: #c0c8d0;
+      }
+
+      /* Light Mode Override */
+      html[data-theme="light"] {
+        --bg: #e5e9f0;
+        --surface: #ffffff;
+        --surface2: #f0f2f5;
+        --border: #a6b5c5;
+        --accent: #6a8eb8;
+        --accent2: #d6767d;
+        --green: #6a8eb8;
+        --text: #2c333e;
+        --muted: #4a5d70;
+      }
       *,
       *::before,
       *::after {
@@ -475,6 +516,26 @@
         border: 1px solid var(--border);
       }
 
+      /* THEME TOGGLE */
+      .theme-toggle {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--text);
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        transition: all 0.15s;
+      }
+      .theme-toggle:hover {
+        border-color: var(--accent);
+        background: var(--surface);
+      }
+
       /* PRINT */
       @media print {
         .sidebar,
@@ -554,6 +615,13 @@
       <div class="topbar">
         <h2>{% block page_title %}{% endblock %}</h2>
         <div class="topbar-actions">
+          <button
+            class="theme-toggle no-print"
+            id="themeToggle"
+            title="Toggle dark/light mode"
+          >
+            <span id="themeIcon">🌙</span>
+          </button>
           {% block topbar_actions %}{% endblock %}
         </div>
       </div>
@@ -564,5 +632,61 @@
         {% endfor %} {% endwith %} {% block content %}{% endblock %}
       </div>
     </div>
+
+    <script>
+      // Theme switcher with localStorage persistence
+      const html = document.documentElement;
+      const themeToggle = document.getElementById("themeToggle");
+      const themeIcon = document.getElementById("themeIcon");
+
+      // Initialize theme on page load
+      function initTheme() {
+        // Check localStorage first, then system preference
+        const savedTheme = localStorage.getItem("theme");
+        let preferredTheme = savedTheme;
+
+        if (!preferredTheme) {
+          // Use system preference if no saved theme
+          preferredTheme = window.matchMedia("(prefers-color-scheme: dark)")
+            .matches
+            ? "dark"
+            : "light";
+        }
+
+        setTheme(preferredTheme);
+      }
+
+      // Set theme and update icon
+      function setTheme(theme) {
+        if (theme === "light" || theme === "dark") {
+          html.setAttribute("data-theme", theme);
+          localStorage.setItem("theme", theme);
+          themeIcon.textContent = theme === "dark" ? "🌙" : "☀️";
+        }
+      }
+
+      // Toggle theme on button click
+      themeToggle.addEventListener("click", () => {
+        const currentTheme =
+          html.getAttribute("data-theme") ||
+          (window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light");
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+        setTheme(newTheme);
+      });
+
+      // Listen for system theme changes
+      window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .addEventListener("change", (e) => {
+          if (!localStorage.getItem("theme")) {
+            setTheme(e.matches ? "dark" : "light");
+          }
+        });
+
+      // Initialize on page load
+      initTheme();
+    </script>
   </body>
 </html>
