@@ -1,16 +1,17 @@
-# ⚡ ShopKeeper — Simple Inventory Manager
+# ShopKeeper — Simple Inventory Manager
 
 A lightweight Flask app for small shops to manage inventory, sales, customers, and open tabs.
 
 ## Features
--  Product catalogue with low-stock alerts
--  POS-style new sale screen (cart, customer picker, change calculator)
--  Bill generation & printing
--  Sales history
--  Customer tracking (purchase history per customer)
--  Open tabs (items taken on credit, per customer)
--  CSV export (products, sales)
--  SQLite — no database setup needed
+
+- Product catalogue with low-stock alerts
+- POS-style new sale screen (cart, customer picker, change calculator)
+- Bill generation & printing
+- Sales history
+- Customer tracking (purchase history per customer)
+- Open tabs (items taken on credit, per customer)
+- CSV export (products, sales)
+- SQLite — no database setup needed
 
 ## Setup
 
@@ -23,6 +24,7 @@ python app.py
 Then open: http://127.0.0.1:5000
 
 ## Project Structure
+
 ```
 shopkeeper/
 ├── app.py              # All routes + DB logic
@@ -45,6 +47,7 @@ shopkeeper/
 ```
 
 ## Quick Start
+
 1. Add a few products under **Products → Add Product**
 2. Add customers under **Customers → Add Customer**
 3. Go to **New Sale** to record a sale — pick items, set amount paid
@@ -52,6 +55,7 @@ shopkeeper/
 5. Use **Open Tabs** to track credit purchases
 
 ## Notes
+
 - All data stored in `shop.db` (SQLite, single file — easy to backup)
 - Currency: Nepali Rupees (Rs) — change in `bill.html` if needed
 - For production use, set `debug=False` in `app.py`
