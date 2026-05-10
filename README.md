@@ -59,3 +59,41 @@ shopkeeper/
 - All data stored in `shop.db` (SQLite, single file — easy to backup)
 - Currency: Nepali Rupees (Rs) — change in `bill.html` if needed
 - For production use, set `debug=False` in `app.py`
+
+## Screenshots
+
+### Dashboard
+
+Overview of shop statistics and quick access to key metrics.
+
+![Dashboard](assets/dashboard.png)
+
+### Products
+
+Manage inventory with low-stock alerts and product details.
+
+![Products](assets/products.png)
+
+### Point of Sale (POS)
+
+Streamlined sales screen with cart, customer selection, and change calculation.
+
+![POS](assets/POS.png)
+
+### Sales History
+
+Track all sales transactions with detailed records.
+
+![Sales History](assets/sales_history.png)
+
+### Customers
+
+Manage customer information and view purchase history.
+
+![Customers](assets/customers.png)
+
+### Open Tabs
+
+Track credit purchases and customer outstanding balances.
+
+![Tabs](assets/tabs.png)

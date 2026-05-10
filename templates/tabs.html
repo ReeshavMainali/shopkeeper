@@ -1,63 +1,108 @@
-{% extends "base.html" %}
-{% block title %} · Open Tabs{% endblock %}
-{% block page_title %}Open Tabs{% endblock %}
-{% block topbar_actions %}
-  <a href="{{ url_for('add_tab') }}" class="btn btn-primary">✚ Open Tab</a>
-{% endblock %}
-
-{% block content %}
-{% if by_customer %}
-  {% for cid, data in by_customer.items() %}
-  <div class="tab-customer" style="margin-bottom:16px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
-    <div class="tab-customer-header">
-      <div>
-        <div style="font-family:var(--font-head);font-weight:700">{{ data.name }}</div>
-        <div style="font-size:0.75rem;color:var(--muted)">{{ data.phone or 'No phone' }}</div>
+{% extends "base.html" %} {% block title %} · Open Tabs{% endblock %} {% block
+page_title %}Open Tabs{% endblock %} {% block topbar_actions %}
+<a href="{{ url_for('add_tab') }}" class="btn btn-primary">✚ Open Tab</a>
+{% endblock %} {% block content %} {% if by_customer %} {% for cid, data in
+by_customer.items() %}
+<div
+  class="tab-customer"
+  style="
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  "
+>
+  <div class="tab-customer-header">
+    <div>
+      <div style="font-family: var(--font-head); font-weight: 700">
+        {{ data.name }}
       </div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="text-align:right">
-          <div style="font-size:0.72rem;color:var(--muted)">Total owed</div>
-          <div style="font-family:var(--font-head);font-weight:800;color:var(--accent2)">Rs {{ "%.0f"|format(data.total) }}</div>
+      <div style="font-size: 0.75rem; color: var(--muted)">
+        {{ data.phone or 'No phone' }}
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px">
+      <div style="text-align: right">
+        <div style="font-size: 0.72rem; color: var(--muted)">Total owed</div>
+        <div
+          style="
+            font-family: var(--font-head);
+            font-weight: 800;
+            color: var(--accent2);
+          "
+        >
+          Rs {{ "%.0f"|format(data.total) }}
         </div>
-        <form method="post" action="{{ url_for('close_customer_tabs', cid=cid) }}">
-          <button type="submit" class="btn btn-green btn-sm">✓ Clear All</button>
-        </form>
-        <a href="{{ url_for('customer_detail', cid=cid) }}" class="btn btn-secondary btn-sm">Profile</a>
       </div>
-    </div>
-    <div class="table-wrap" style="background:var(--surface)">
-      <table>
-        <thead>
-          <tr><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th><th>Opened</th><th>Action</th></tr>
-        </thead>
-        <tbody>
-          {% for tab in data.items %}
-          <tr>
-            <td>{{ tab.product_name }}</td>
-            <td>{{ tab.qty }} {{ tab.unit or 'pcs' }}</td>
-            <td>Rs {{ "%.0f"|format(tab.price) }}</td>
-            <td><strong>Rs {{ "%.0f"|format(tab.qty * tab.price) }}</strong></td>
-            <td style="color:var(--muted);font-size:0.78rem">{{ tab.opened_at[:16] }}</td>
-            <td>
-              <form method="post" action="{{ url_for('close_tab', tid=tab.id) }}">
-                <button type="submit" class="btn btn-green btn-sm">Paid</button>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      <form
+        method="post"
+        action="{{ url_for('close_customer_tabs', cid=cid) }}"
+      >
+        <button type="submit" class="btn btn-green btn-sm">✓ Clear All</button>
+      </form>
+      <a
+        href="{{ url_for('customer_detail', cid=cid) }}"
+        class="btn btn-secondary btn-sm"
+        >Profile</a
+      >
     </div>
   </div>
-  {% endfor %}
-{% else %}
-  <div class="card">
-    <div class="card-body" style="text-align:center;padding:48px;color:var(--muted)">
-      <div style="font-size:2rem;margin-bottom:12px">✓</div>
-      <div style="font-family:var(--font-head);font-weight:700;margin-bottom:6px">No open tabs</div>
-      <div style="font-size:0.83rem">All customers are settled up.</div>
-      <a href="{{ url_for('add_tab') }}" class="btn btn-primary" style="margin-top:16px;display:inline-flex">✚ Open a Tab</a>
-    </div>
+  <div class="table-wrap" style="background: var(--surface)">
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Subtotal</th>
+          <th>Opened</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tab in data["items"] %}
+        <tr>
+          <td>{{ tab.product_name }}</td>
+          <td>{{ tab.qty }} {{ tab.unit or 'pcs' }}</td>
+          <td>Rs {{ "%.0f"|format(tab.price) }}</td>
+          <td><strong>Rs {{ "%.0f"|format(tab.qty * tab.price) }}</strong></td>
+          <td style="color: var(--muted); font-size: 0.78rem">
+            {{ tab.opened_at[:16] }}
+          </td>
+          <td>
+            <form method="post" action="{{ url_for('close_tab', tid=tab.id) }}">
+              <button type="submit" class="btn btn-green btn-sm">Paid</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
-{% endif %}
-{% endblock %}
+</div>
+{% endfor %} {% else %}
+<div class="card">
+  <div
+    class="card-body"
+    style="text-align: center; padding: 48px; color: var(--muted)"
+  >
+    <div style="font-size: 2rem; margin-bottom: 12px">✓</div>
+    <div
+      style="
+        font-family: var(--font-head);
+        font-weight: 700;
+        margin-bottom: 6px;
+      "
+    >
+      No open tabs
+    </div>
+    <div style="font-size: 0.83rem">All customers are settled up.</div>
+    <a
+      href="{{ url_for('add_tab') }}"
+      class="btn btn-primary"
+      style="margin-top: 16px; display: inline-flex"
+      >✚ Open a Tab</a
+    >
+  </div>
+</div>
+{% endif %} {% endblock %}
